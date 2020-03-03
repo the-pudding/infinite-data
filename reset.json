@@ -1,0 +1,37 @@
+{
+  "updated": "Tue Mar 03 2020 08:15:37 GMT-0500 (Eastern Standard Time)",
+  "levels": [
+    {
+      "id": 0,
+      "title": "Beethoven's 5th",
+      "range": {
+        "midi": "exact",
+        "duration": "exact"
+      },
+      "sequence": [
+        {
+          "midi": 67,
+          "duration": 3
+        },
+        {
+          "midi": 67,
+          "duration": 3
+        },
+        {
+          "midi": 67,
+          "duration": 3
+        },
+        {
+          "midi": 63,
+          "duration": 3
+        }
+      ],
+      "result": {
+        "attempts": 0,
+        "recent": [],
+        "best": { "lev": 999, "seq": null },
+        "done": false
+      }
+    }
+  ]
+}

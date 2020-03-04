@@ -31,7 +31,24 @@ module.exports = [
       { midi: 67, duration: 3 },
       { midi: 67, duration: 3 },
       { midi: 67, duration: 3 },
-      { midi: 63, duration: 1 }
+      { midi: 63, duration: 0 }
+    ]
+  },
+  {
+    id: 2,
+    title: "Ice Ice Baby",
+    range: {
+      midi: "exact",
+      duration: "exact"
+    },
+    sequence: [
+      { midi: 50, duration: 3 },
+      { midi: 50, duration: 3 },
+      { midi: 50, duration: 3 },
+      { midi: 50, duration: 4 },
+      { midi: 50, duration: 4 },
+      { midi: 50, duration: 3 },
+      { midi: 45, duration: 3 }
     ]
   }
 ];

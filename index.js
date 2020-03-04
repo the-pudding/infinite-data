@@ -1,3 +1,11 @@
+const DEV = true;
+if (DEV)
+  console.log(`
+******         ******
+****** TESTING ******
+******         ******
+`);
+
 const fs = require("fs");
 const request = require("request");
 const dataS3 = require("data-s3");
@@ -6,8 +14,13 @@ const levDist = require("levdist");
 const MersenneTwister = require("mersenne-twister");
 const generator = new MersenneTwister();
 const sgMail = require("@sendgrid/mail");
+const devData = require("./dev.js");
 
-const iterations = 10;
+// const iterations = 6000; // 10 per second
+const RECENT = 1000;
+const PER = 10000;
+const MIN = 10;
+const ITERATIONS = MIN * PER;
 const levels = require("./levels.js");
 const path = "2020/04/infinite-data";
 const file = "data.json";
@@ -49,6 +62,7 @@ function getRange({ range, sequence, v }) {
 }
 
 function generateAttempts({ range, sequence }) {
+  console.time("generate");
   const answer = sequence.map(d => `${d.midi}-${d.duration}.`).join("");
   const midis = getRange({ range, sequence, v: "midi" });
   midis.sort(d3.ascending);
@@ -72,20 +86,25 @@ function generateAttempts({ range, sequence }) {
     return out;
   };
 
-  return d3.range(iterations).map(makeAttempt);
+  const output = d3.range(ITERATIONS).map(makeAttempt);
+  console.timeEnd("generate");
+  return output;
 }
 
 function getData() {
   return new Promise((resolve, reject) => {
-    const url = `https://pudding.cool/${path}/${file}?version=${version}`;
-    request(url, (err, response, body) => {
-      if (err) reject(err);
-      else if (response && response.statusCode === 200) {
-        const data = JSON.parse(body);
-        resolve(data);
-      }
-      reject(response.statusCode);
-    });
+    if (DEV) resolve(devData);
+    else {
+      const url = `https://pudding.cool/${path}/${file}?version=${version}`;
+      request(url, (err, response, body) => {
+        if (err) reject(err);
+        else if (response && response.statusCode === 200) {
+          const data = JSON.parse(body);
+          resolve(data);
+        }
+        reject(response.statusCode);
+      });
+    }
   });
 }
 
@@ -116,14 +135,18 @@ function joinData(prev) {
     const index = recent.findIndex(d => d[0][2] === 0);
     const done = index > -1;
     const { result } = current;
-    result.recent = done ? recent.slice(0, index + 1) : recent;
+    const sliced = done ? recent.slice(0, index + 1) : recent;
+    result.recent = sliced.slice(-RECENT);
     result.done = done;
-    result.attempts += done ? index : iterations;
-    // best match update?
+    result.attempts += done ? index : ITERATIONS;
     const dupe = recent.map(d => ({ lev: d[0][2], seq: d }));
     dupe.sort((a, b) => d3.ascending(a.lev, b.lev));
     result.best = dupe[0].lev < result.best.lev ? dupe[0] : result.best;
 
+    if (DEV) {
+      console.log("attempts", result.attempts);
+      console.log("best", JSON.stringify(result.best));
+    }
     return {
       ...unified,
       updated
@@ -137,8 +160,8 @@ async function init() {
     dataS3.init({ accessKeyId, secretAccessKey, region });
     const prevData = await getData();
     const data = await joinData(prevData);
-    // await dataS3.upload({ bucket, path, file, data });
-    fs.writeFileSync("test.json", JSON.stringify(data, null, 2));
+    if (DEV) fs.writeFileSync("test.json", JSON.stringify(data));
+    else await dataS3.upload({ bucket, path, file, data });
   } catch (err) {
     console.log(err);
     // sendMail(err);

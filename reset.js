@@ -2,7 +2,7 @@ const fs = require("fs");
 const dataS3 = require("data-s3");
 require("dotenv").config();
 
-const data = JSON.parse(fs.readFileSync("./reset.json", "utf8"));
+const data = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
 const path = "2020/04/infinite-data";
 const file = "data.json";
 

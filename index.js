@@ -14,14 +14,14 @@ const levDist = require("levdist");
 const MersenneTwister = require("mersenne-twister");
 const generator = new MersenneTwister();
 const sgMail = require("@sendgrid/mail");
-const devData = require("./dev.js");
+const devData = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
+const getLevels = require("./levels.js");
 
 // const iterations = 6000; // 10 per second
 const RECENT = 1000;
 const PER = 10000;
 const MIN = 10;
 const ITERATIONS = MIN * PER;
-const levels = require("./levels.js");
 const path = "2020/04/infinite-data";
 const file = "data.json";
 const updated = new Date().toString();
@@ -52,24 +52,13 @@ function sendMail(msg) {
     });
 }
 
-function getRange({ range, sequence, v }) {
-  if (range[v] === "exact") return [...new Set(sequence.map(d => d[v]))];
-  else if (range[v] === "between") {
-    const e = d3.extent(d => d[v]);
-    return d3.range(e[0], e[1] + 1).map(d => d);
-  }
-  return range[v];
-}
-
 function generateAttempts({ range, sequence }) {
   console.time("generate");
   const answer = sequence.map(d => `${d.midi}-${d.duration}.`).join("");
-  const midis = getRange({ range, sequence, v: "midi" });
+  const { midis, durations } = range;
   midis.sort(d3.ascending);
-  const mL = midis.length;
-
-  const durations = getRange({ range, sequence, v: "duration" });
   durations.sort(d3.ascending);
+  const mL = midis.length;
   const dL = durations.length;
 
   const makeAttempt = () => {
@@ -108,29 +97,31 @@ function getData() {
   });
 }
 
-function unify(prev) {
-  const add = levels.filter(l => !prev.levels.find(p => p.id === l.id));
-  prev.levels = prev.levels.concat(add);
-  return prev;
+function unify({ levels, prevData }) {
+  const add = levels.filter(
+    l => !prevData.levels.find(p => p.title === l.title)
+  );
+  prevData.levels = prevData.levels.concat(add);
+  return prevData;
 }
 
-function joinData(prev) {
-  // adds new levels to the live data if not aligned
-  const unified = unify(prev);
+function joinData({ levels, prevData }) {
+  try {
+    // adds new levels to the live data if not aligned
+    const unifiedData = unify({ levels, prevData });
 
-  // grab the active level and update it
-  let current = prev.levels.find(d => d.result && !d.result.done);
-  if (!current) {
-    // TODO
-    // make the next one current
-    // "result": {
-    //     "attempts": 0,
-    //     "recent": [],
-    //     "best": { "lev": 999, "seq": null },
-    //     "done": false
-    //   }
-  }
-  if (current) {
+    // grab the active level and update it
+    let current = unifiedData.levels.find(d => d.result && !d.result.done);
+    if (!current) {
+      unifiedData.levels[0].result = {
+        attempts: 0,
+        recent: [],
+        best: { lev: 999, seq: null },
+        done: false
+      };
+      current = unifiedData.levels[0];
+    }
+
     const recent = generateAttempts(current);
     const index = recent.findIndex(d => d[0][2] === 0);
     const done = index > -1;
@@ -138,7 +129,7 @@ function joinData(prev) {
     const sliced = done ? recent.slice(0, index + 1) : recent;
     result.recent = sliced.slice(-RECENT);
     result.done = done;
-    result.attempts += done ? index : ITERATIONS;
+    result.attempts += done ? index + 1 : ITERATIONS;
     const dupe = recent.map(d => ({ lev: d[0][2], seq: d }));
     dupe.sort((a, b) => d3.ascending(a.lev, b.lev));
     result.best = dupe[0].lev < result.best.lev ? dupe[0] : result.best;
@@ -147,46 +138,30 @@ function joinData(prev) {
       console.log("attempts", result.attempts);
       console.log("best", JSON.stringify(result.best));
     }
+
     return {
-      ...unified,
+      ...unifiedData,
       updated
     };
+  } catch (err) {
+    throw new Error(err);
   }
-  throw new Error("no current level");
 }
 
 async function init() {
   try {
     dataS3.init({ accessKeyId, secretAccessKey, region });
+    const levels = await getLevels();
     const prevData = await getData();
-    const data = await joinData(prevData);
+    // if (DEV) fs.writeFileSync("test-prev.json", JSON.stringify(prevData));
+    const data = await joinData({ levels, prevData });
     if (DEV) fs.writeFileSync("test.json", JSON.stringify(data));
     else await dataS3.upload({ bucket, path, file, data });
   } catch (err) {
-    console.log(err);
-    // sendMail(err);
+    const msg = err.toString();
+    console.log(msg);
+    // sendMail(msg);
   }
 }
 
 init();
-
-/* data schema
-{
-	updated: "Mon Mar 02 2020 17:29:02 GMT-0500 (Eastern Standard Time)" // date of last update
-	levels: [{
-		id: 0,
-		title: "Beethoven's 5th",
-		sequence: [
-			{ midi: 67, duration: 8 },
-			{ midi: 67, duration: 8 }
-			{ midi: 67, duration: 8 }
-			{ midi: 63, duration: 1 }
-		]
-		result: {
-			attempts: 0,
-			recent: [],
-			done: false
-		}
-	}]
-}
-*/

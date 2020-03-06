@@ -181,7 +181,7 @@ async function init() {
   } catch (err) {
     const msg = err.toString();
     console.log(msg);
-    // sendMail(msg);
+    sendMail(msg);
   }
 }
 

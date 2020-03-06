@@ -17,10 +17,12 @@ const sgMail = require("@sendgrid/mail");
 const devData = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
 const getLevels = require("./levels.js");
 
-// const iterations = 6000; // 10 per second
 const RECENT = 1000;
-const PER = 10000;
-const MIN = 10;
+// const PER = 100000; // 100k per minute
+// const SEC = 1;
+const PER = 1000; // X per second
+const SEC = 60;
+const MIN = 10 * SEC;
 const ITERATIONS = MIN * PER;
 const path = "2020/04/infinite-data";
 const file = "data.json";
@@ -53,7 +55,6 @@ function sendMail(msg) {
 }
 
 function generateAttempts({ range, sequence }) {
-  console.time("generate");
   const answer = sequence.map(d => `${d.midi}-${d.duration}.`).join("");
   const { midis, durations } = range;
   midis.sort(d3.ascending);
@@ -61,23 +62,42 @@ function generateAttempts({ range, sequence }) {
   const mL = midis.length;
   const dL = durations.length;
 
-  const makeAttempt = () => {
+  const best = { index: 0, dist: 9999 };
+  let done = false;
+
+  const makeAttempt = i => {
     const out = sequence.map(() => {
       const mR = midis[Math.floor(generator.random() * mL)];
       const dR = durations[Math.floor(generator.random() * dL)];
       return [mR, dR];
     });
-    const a = out.map(d => `${d[0]}-${d[1]}.`).join("");
-    const dist = levDist(answer, a);
-    // TODO calculate best (lev dist vs exact order)
-    // rest will need to be 00 not 0
-    out[0].push(dist);
+    if (!done) {
+      const a = out.map(d => `${d[0]}-${d[1]}.`).join("");
+      const dist = levDist(answer, a);
+      if (dist < best.dist) {
+        best.index = i;
+        best.dist = dist;
+        if (dist === 0) done = true;
+      }
+    }
     return out;
   };
 
-  const output = d3.range(ITERATIONS).map(makeAttempt);
+  // optimized atempts
+  console.time("generate");
+  const recent = [];
+  for (let i = 0; i < ITERATIONS; i++) {
+    recent.push(makeAttempt(i));
+  }
   console.timeEnd("generate");
-  return output;
+
+  recent[best.index][0][2] = best.dist;
+
+  // for (i = 0; i < ITERATIONS; i++) {}
+  // recent[best.index][2] = best.dist;
+  // console.timeEnd("best");
+
+  return { recent, best };
 }
 
 function getData() {
@@ -116,23 +136,25 @@ function joinData({ levels, prevData }) {
       unifiedData.levels[0].result = {
         attempts: 0,
         recent: [],
-        best: { lev: 999, seq: null },
+        best: [],
         done: false
       };
       current = unifiedData.levels[0];
     }
 
-    const recent = generateAttempts(current);
-    const index = recent.findIndex(d => d[0][2] === 0);
-    const done = index > -1;
+    const { recent, best } = generateAttempts(current);
     const { result } = current;
-    const sliced = done ? recent.slice(0, index + 1) : recent;
-    result.recent = sliced.slice(-RECENT);
+
+    const done = best.dist === 0;
+    const sliced = done ? recent.slice(0, best.index + 1) : recent;
+
     result.done = done;
-    result.attempts += done ? index + 1 : ITERATIONS;
-    const dupe = recent.map(d => ({ lev: d[0][2], seq: d }));
-    dupe.sort((a, b) => d3.ascending(a.lev, b.lev));
-    result.best = dupe[0].lev < result.best.lev ? dupe[0] : result.best;
+    result.recent = sliced.slice(-RECENT);
+    result.attempts += done ? best.index + 1 : ITERATIONS;
+    if (result.best.length) {
+      result.best =
+        result.best.dist < result.best[0][2] ? recent[best.index] : result.best;
+    } else result.best = recent[best.index];
 
     if (DEV) {
       console.log("attempts", result.attempts);
@@ -153,7 +175,6 @@ async function init() {
     dataS3.init({ accessKeyId, secretAccessKey, region });
     const levels = await getLevels();
     const prevData = await getData();
-    // if (DEV) fs.writeFileSync("test-prev.json", JSON.stringify(prevData));
     const data = await joinData({ levels, prevData });
     if (DEV) fs.writeFileSync("test.json", JSON.stringify(data));
     else await dataS3.upload({ bucket, path, file, data });

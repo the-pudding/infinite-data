@@ -29,7 +29,6 @@ const file = "data.json";
 const updated = new Date().toString();
 const version = Date.now();
 
-const sgKey = process.env.SENDGRID_API_KEY;
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const bucket = process.env.AWS_BUCKET;
@@ -159,9 +158,9 @@ async function init() {
     const data = await joinData({ levels, prevData });
     if (DEV) fs.writeFileSync("test.json", JSON.stringify(data));
     else await dataS3.upload({ bucket, path, file, data });
+    process.exit();
   } catch (err) {
     const msg = err.toString();
-    console.log(msg);
     notify(msg);
   }
 }

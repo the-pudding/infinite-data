@@ -13,7 +13,7 @@ const d3 = require("d3");
 const levDist = require("levdist");
 const MersenneTwister = require("mersenne-twister");
 const generator = new MersenneTwister();
-const sgMail = require("@sendgrid/mail");
+const notify = require("./notify.js");
 const devData = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
 const getLevels = require("./levels.js");
 
@@ -34,25 +34,6 @@ const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const bucket = process.env.AWS_BUCKET;
 const region = process.env.AWS_REGION;
-
-function sendMail(msg) {
-  sgMail.setApiKey(sgKey);
-
-  const msg = {
-    to: "russell@polygraph.cool",
-    from: "russellgoldenberg@gmail.com",
-    subject: "Issue with Infinite Data",
-    text: msg
-  };
-
-  sgMail
-    .send(msg)
-    .then(process.exit)
-    .catch(err => {
-      console.log(err);
-      process.exit();
-    });
-}
 
 function generateAttempts({ range, sequence }) {
   const answer = sequence.map(d => `${d.midi}-${d.duration}.`).join("");
@@ -181,7 +162,7 @@ async function init() {
   } catch (err) {
     const msg = err.toString();
     console.log(msg);
-    sendMail(msg);
+    notify(msg);
   }
 }
 

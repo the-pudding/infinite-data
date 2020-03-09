@@ -17,7 +17,7 @@ const notify = require("./notify.js");
 const getLevels = require("./levels.js");
 
 const RECENT = 1000;
-const PER = 10000000; // x per minute
+const PER = 1000000; // x per minute
 const MIN = 10;
 const ITERATIONS = MIN * PER;
 const path = "2020/04/infinite-data";

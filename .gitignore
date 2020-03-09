@@ -4,6 +4,7 @@ npm-debug.log
 package-lock.json
 test.json
 test-prev.json
+levels-backup.json
 
 # Local development
 *.env

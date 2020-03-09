@@ -14,7 +14,6 @@ const levDist = require("levdist");
 const MersenneTwister = require("mersenne-twister");
 const generator = new MersenneTwister();
 const notify = require("./notify.js");
-const devData = JSON.parse(fs.readFileSync("./levels-backup2.json", "utf8"));
 const getLevels = require("./levels.js");
 
 const RECENT = 1000;
@@ -78,8 +77,10 @@ function generateAttempts({ range, sequence }) {
 
 function getData() {
   return new Promise((resolve, reject) => {
-    if (DEV) resolve(devData);
-    else {
+    if (DEV) {
+      const data = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
+      resolve(data);
+    } else {
       const url = `https://pudding.cool/${path}/${file}?version=${version}`;
       request(url, (err, response, body) => {
         if (err) reject(err);

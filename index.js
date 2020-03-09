@@ -64,7 +64,10 @@ function generateAttempts({ range, sequence, iterations }) {
     }
     i += 1;
   }
-  console.log("generate ......", `${Date.now() - start}ms`);
+
+  const n = (Date.now() - start) / 1000;
+  const g = n < 1 ? "< 0" : Math.floor(n);
+  console.log("generate ......", `${g}s`);
 
   const recent = output.filter(d => d);
   if (done) {
@@ -108,6 +111,7 @@ function joinData({ levels, prevData }) {
 
     // grab the active level and update it
     let current = unifiedData.levels.find(d => d.result && !d.result.done);
+
     if (!current) {
       current = unifiedData.levels.find(d => !d.result);
       current.result = {
@@ -120,6 +124,7 @@ function joinData({ levels, prevData }) {
     const perMin = Math.min(MAX_PER, Math.pow(10, current.sig - 2));
     const iterations = MIN * perMin;
     console.log("title .........", current.title);
+    console.log("iterations ....", iterations);
 
     const { recent, done, attempts } = generateAttempts({
       ...current,
@@ -131,7 +136,6 @@ function joinData({ levels, prevData }) {
     result.recent = recent;
     result.attempts += attempts;
 
-    console.log("iterations ....", iterations);
     console.log("attempts ......", result.attempts);
 
     return {

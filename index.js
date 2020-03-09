@@ -10,11 +10,12 @@ const fs = require("fs");
 const request = require("request");
 const dataS3 = require("data-s3");
 const d3 = require("d3");
-const levDist = require("levdist");
-const MersenneTwister = require("mersenne-twister");
-const generator = new MersenneTwister();
+const fde = require("fast-deep-equal");
 const notify = require("./notify.js");
 const getLevels = require("./levels.js");
+// const levDist = require("levdist");
+// const MersenneTwister = require("mersenne-twister");
+// const generator = new MersenneTwister();
 
 const RECENT = 1000;
 const MAX_PER = 5000000;
@@ -31,7 +32,7 @@ const bucket = process.env.AWS_BUCKET;
 const region = process.env.AWS_REGION;
 
 function generateAttempts({ range, sequence, iterations }) {
-  const answer = sequence.map(d => `${d.midi}-${d.duration}.`).join("");
+  const seqLen = sequence.length;
   const { midis, durations } = range;
   midis.sort(d3.ascending);
   durations.sort(d3.ascending);
@@ -39,31 +40,46 @@ function generateAttempts({ range, sequence, iterations }) {
   const dL = durations.length;
 
   let done = false;
-  let correct = null;
 
-  const makeAttempt = i => {
-    const out = sequence.map(() => {
-      const mR = midis[Math.floor(generator.random() * mL)];
-      const dR = durations[Math.floor(generator.random() * dL)];
-      return [mR, dR];
-    });
-    const a = out.map(d => `${d[0]}-${d[1]}.`).join("");
-    if (a === answer) done = true;
-    return out;
+  // this is where the magic happens (ie optimization needed)
+  const makeAttempt = () => {
+    const seq = [];
+    let s = 0;
+    while (s < seqLen) {
+      seq.push([
+        midis[~~(Math.random() * mL)],
+        durations[~~(Math.random() * dL)]
+      ]);
+      s += 1;
+    }
+    done = fde(seq, sequence);
+    return seq;
   };
 
-  // optimized atempts
-  const start = Date.now();
   const output = [];
   let i = 0;
+
   while (i < iterations) {
-    output[i % RECENT] = makeAttempt(i);
-    if (done) {
-      correct = i;
-      break;
-    }
+    // store the 1000 most recent attempts
+    output[i % 1000] = makeAttempt();
+    if (done) break;
     i += 1;
   }
+
+  const start = Date.now();
+
+  if (DEV) console.time("makeAttempt");
+
+  const output = [];
+  let i = 0;
+
+  while (i < iterations) {
+    output[i % RECENT] = makeAttempt();
+    if (done) break;
+    i += 1;
+  }
+
+  if (DEV) console.timeEnd("makeAttempt");
 
   const n = (Date.now() - start) / 1000;
   const g = n < 1 ? "< 0" : Math.floor(n);
@@ -112,8 +128,11 @@ function joinData({ levels, prevData }) {
     // grab the active level and update it
     let current = unifiedData.levels.find(d => d.result && !d.result.done);
 
+    // TODO remove
+    unifiedData.levels.reverse();
+
     if (!current) {
-      current = unifiedData.levels.find(d => !d.result);
+      current = unifiedData.levels.slice(3).find(d => !d.result);
       current.result = {
         attempts: 0,
         recent: [],
@@ -159,7 +178,7 @@ async function init() {
     process.exit();
   } catch (err) {
     const msg = err.toString();
-    notify(msg);
+    // notify(msg);
   }
 }
 

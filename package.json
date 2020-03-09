@@ -15,6 +15,7 @@
     "d3": "^5.15.0",
     "data-s3": "^1.2.3",
     "dotenv": "^8.2.0",
+    "fast-deep-equal": "^3.1.1",
     "levdist": "^2.2.9",
     "mersenne-twister": "^1.1.0",
     "request": "^2.88.2"

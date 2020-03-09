@@ -121,7 +121,8 @@ function joinData({ levels, prevData }) {
       };
     }
 
-    const perMin = Math.min(MAX_PER, Math.pow(10, current.sig - 2));
+    const sig = Math.max(0, current.sig - 3);
+    const perMin = Math.min(MAX_PER, Math.pow(10, sig));
     const iterations = MIN * perMin;
     console.log("title .........", current.title);
     console.log("iterations ....", iterations);

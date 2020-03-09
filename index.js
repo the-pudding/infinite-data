@@ -17,9 +17,9 @@ const notify = require("./notify.js");
 const getLevels = require("./levels.js");
 
 const RECENT = 1000;
-const PER = 1000000; // x per minute
+const MAX_PER = 5000000;
 const MIN = 10;
-const ITERATIONS = MIN * PER;
+
 const path = "2020/04/infinite-data";
 const file = "data.json";
 const updated = new Date().toString();
@@ -30,7 +30,7 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const bucket = process.env.AWS_BUCKET;
 const region = process.env.AWS_REGION;
 
-function generateAttempts({ range, sequence }) {
+function generateAttempts({ range, sequence, iterations }) {
   const answer = sequence.map(d => `${d.midi}-${d.duration}.`).join("");
   const { midis, durations } = range;
   midis.sort(d3.ascending);
@@ -53,19 +53,18 @@ function generateAttempts({ range, sequence }) {
   };
 
   // optimized atempts
-  console.time("generate");
+  const start = Date.now();
   const output = [];
   let i = 0;
-  while (i < ITERATIONS) {
+  while (i < iterations) {
     output[i % RECENT] = makeAttempt(i);
     if (done) {
       correct = i;
       break;
     }
     i += 1;
-    // recent.push(makeAttempt(i));
   }
-  console.timeEnd("generate");
+  console.log("generate ......", `${Date.now() - start}ms`);
 
   const recent = output.filter(d => d);
   if (done) {
@@ -110,22 +109,30 @@ function joinData({ levels, prevData }) {
     // grab the active level and update it
     let current = unifiedData.levels.find(d => d.result && !d.result.done);
     if (!current) {
-      unifiedData.levels[unifiedData.levels.length - 1].result = {
+      current = unifiedData.levels.find(d => !d.result);
+      current.result = {
         attempts: 0,
         recent: [],
         done: false
       };
-      current = unifiedData.levels[unifiedData.levels.length - 1];
     }
 
-    const { recent, done, attempts } = generateAttempts(current);
+    const perMin = Math.min(MAX_PER, Math.pow(10, current.sig - 2));
+    const iterations = MIN * perMin;
+    console.log("title .........", current.title);
+
+    const { recent, done, attempts } = generateAttempts({
+      ...current,
+      iterations
+    });
     const { result } = current;
 
     result.done = done;
     result.recent = recent;
     result.attempts += attempts;
 
-    if (DEV) console.log("attempts", result.attempts);
+    console.log("iterations ....", iterations);
+    console.log("attempts ......", result.attempts);
 
     return {
       ...unifiedData,

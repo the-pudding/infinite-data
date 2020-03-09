@@ -51,6 +51,8 @@ function cleanData(data) {
     const sequence = parseSequence(d.sequence);
     return {
       title: d.title,
+      odds: +d.odds,
+      sig: +d.sig,
       sequence,
       range: {
         midis: parseMidi({ value: d.range_midi, sequence }),

@@ -14,15 +14,12 @@ const levDist = require("levdist");
 const MersenneTwister = require("mersenne-twister");
 const generator = new MersenneTwister();
 const notify = require("./notify.js");
-const devData = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
+const devData = JSON.parse(fs.readFileSync("./levels-backup2.json", "utf8"));
 const getLevels = require("./levels.js");
 
 const RECENT = 1000;
-// const PER = 100000; // 100k per minute
-// const SEC = 1;
-const PER = 10000; // X per second
-const SEC = 60;
-const MIN = 10 * SEC;
+const PER = 10000000; // x per minute
+const MIN = 10;
 const ITERATIONS = MIN * PER;
 const path = "2020/04/infinite-data";
 const file = "data.json";
@@ -42,8 +39,8 @@ function generateAttempts({ range, sequence }) {
   const mL = midis.length;
   const dL = durations.length;
 
-  const best = { index: 0, dist: 9999 };
   let done = false;
+  let correct = null;
 
   const makeAttempt = i => {
     const out = sequence.map(() => {
@@ -51,33 +48,32 @@ function generateAttempts({ range, sequence }) {
       const dR = durations[Math.floor(generator.random() * dL)];
       return [mR, dR];
     });
-    if (!done) {
-      const a = out.map(d => `${d[0]}-${d[1]}.`).join("");
-      const dist = levDist(answer, a);
-      if (dist < best.dist) {
-        best.index = i;
-        best.dist = dist;
-        if (dist === 0) done = true;
-      }
-    }
+    const a = out.map(d => `${d[0]}-${d[1]}.`).join("");
+    if (a === answer) done = true;
     return out;
   };
 
   // optimized atempts
   console.time("generate");
-  const recent = [];
-  for (let i = 0; i < ITERATIONS; i++) {
-    recent.push(makeAttempt(i));
+  const output = [];
+  let i = 0;
+  while (i < ITERATIONS) {
+    output[i % RECENT] = makeAttempt(i);
+    if (done) {
+      correct = i;
+      break;
+    }
+    i += 1;
+    // recent.push(makeAttempt(i));
   }
   console.timeEnd("generate");
 
-  recent[best.index][0][2] = best.dist;
-
-  // for (i = 0; i < ITERATIONS; i++) {}
-  // recent[best.index][2] = best.dist;
-  // console.timeEnd("best");
-
-  return { recent, best };
+  const recent = output.filter(d => d);
+  if (done) {
+    const t = recent.splice(correct, 1);
+    recent.push(t);
+  }
+  return { recent, done, attempts: i };
 }
 
 function getData() {
@@ -116,30 +112,19 @@ function joinData({ levels, prevData }) {
       unifiedData.levels[0].result = {
         attempts: 0,
         recent: [],
-        best: [],
         done: false
       };
       current = unifiedData.levels[0];
     }
 
-    const { recent, best } = generateAttempts(current);
+    const { recent, done, attempts } = generateAttempts(current);
     const { result } = current;
 
-    const done = best.dist === 0;
-    const sliced = done ? recent.slice(0, best.index + 1) : recent;
-
     result.done = done;
-    result.recent = sliced.slice(-RECENT);
-    result.attempts += done ? best.index + 1 : ITERATIONS;
-    if (result.best.length) {
-      result.best =
-        result.best.dist < result.best[0][2] ? recent[best.index] : result.best;
-    } else result.best = recent[best.index];
+    result.recent = recent;
+    result.attempts += attempts;
 
-    if (DEV) {
-      console.log("attempts", result.attempts);
-      console.log("best", JSON.stringify(result.best));
-    }
+    if (DEV) console.log("attempts", result.attempts);
 
     return {
       ...unifiedData,

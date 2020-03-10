@@ -145,6 +145,7 @@ function joinData({ levels, prevData }) {
     result.done = done;
     result.recent = recent;
     result.attempts += attempts;
+    if (result.done) result.end = new Date().toString();
 
     console.log("attempts ......", result.attempts);
 

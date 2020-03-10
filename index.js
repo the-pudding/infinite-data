@@ -118,7 +118,8 @@ function joinData({ levels, prevData }) {
       current.result = {
         attempts: 0,
         recent: [],
-        done: false
+        done: false,
+        end: ""
       };
     }
 

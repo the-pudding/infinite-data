@@ -5,7 +5,7 @@ require("dotenv").config();
 const data = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
 const path = "2020/04/infinite-data";
 const file = "data.json";
-const now = new Date().toString();
+const now = new Date().toUTCString();
 data.start = now;
 data.updated = now;
 

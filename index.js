@@ -10,15 +10,11 @@ const fs = require("fs");
 const request = require("request");
 const dataS3 = require("data-s3");
 const d3 = require("d3");
-const fde = require("fast-deep-equal");
+const fastDeepEqual = require("fast-deep-equal");
 const notify = require("./notify.js");
 const getLevels = require("./levels.js");
-// const levDist = require("levdist");
-// const MersenneTwister = require("mersenne-twister");
-// const generator = new MersenneTwister();
 
 const RECENT = 1000;
-const MAX_PER = 20000000;
 const MIN = 10;
 
 const path = "2020/04/infinite-data";
@@ -41,7 +37,7 @@ function generateAttempts({ range, sequence, iterations }) {
 
   let done = false;
 
-  // this is where the magic happens (ie optimization needed)
+  // this is where the magic happens
   const makeAttempt = () => {
     const seq = [];
     let s = 0;
@@ -52,7 +48,7 @@ function generateAttempts({ range, sequence, iterations }) {
       ]);
       s += 1;
     }
-    done = fde(seq, sequence);
+    done = fastDeepEqual(seq, sequence);
     return seq;
   };
 
@@ -61,18 +57,11 @@ function generateAttempts({ range, sequence, iterations }) {
 
   const start = Date.now();
 
-  if (DEV) console.time("makeAttempt");
-
-  iterations = 200000000;
-  const mod = iterations / 10;
   while (i < iterations) {
-    if (i % mod === 0) console.log(i / iterations);
     output[i % RECENT] = makeAttempt();
     if (done) break;
     i += 1;
   }
-
-  if (DEV) console.timeEnd("makeAttempt");
 
   const n = (Date.now() - start) / 1000;
   const g = n < 1 ? "< 0" : Math.floor(n);
@@ -133,9 +122,7 @@ function joinData({ levels, prevData }) {
       };
     }
 
-    const sig = Math.max(0, current.sig - 3);
-    const perMin = Math.min(MAX_PER, Math.pow(10, sig));
-    const iterations = MIN * perMin;
+    const iterations = MIN * current.apm;
     console.log("title .........", current.title);
     console.log("iterations ....", iterations);
 
@@ -172,7 +159,8 @@ async function init() {
     process.exit();
   } catch (err) {
     const msg = err.toString();
-    // notify(msg);
+    if (DEV) console.log(msg);
+    else notify(msg);
   }
 }
 

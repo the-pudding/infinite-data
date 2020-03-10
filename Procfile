@@ -1,1 +1,1 @@
-worker: node index.js
+worker: NODE_ENV=development node index.js

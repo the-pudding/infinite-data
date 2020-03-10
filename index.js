@@ -63,7 +63,7 @@ function generateAttempts({ range, sequence, iterations }) {
 
   if (DEV) console.time("makeAttempt");
 
-  while (i < 10000000) {
+  while (i < 100000000) {
     output[i % RECENT] = makeAttempt();
     if (done) break;
     i += 1;

@@ -18,7 +18,7 @@ const getLevels = require("./levels.js");
 // const generator = new MersenneTwister();
 
 const RECENT = 1000;
-const MAX_PER = 5000000;
+const MAX_PER = 20000000;
 const MIN = 10;
 
 const path = "2020/04/infinite-data";
@@ -59,19 +59,9 @@ function generateAttempts({ range, sequence, iterations }) {
   const output = [];
   let i = 0;
 
-  while (i < iterations) {
-    // store the 1000 most recent attempts
-    output[i % 1000] = makeAttempt();
-    if (done) break;
-    i += 1;
-  }
-
   const start = Date.now();
 
   if (DEV) console.time("makeAttempt");
-
-  const output = [];
-  let i = 0;
 
   while (i < iterations) {
     output[i % RECENT] = makeAttempt();

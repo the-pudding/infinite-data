@@ -122,7 +122,7 @@ function joinData({ levels, prevData }) {
     unifiedData.levels.reverse();
 
     if (!current) {
-      current = unifiedData.levels.slice(3).find(d => !d.result);
+      current = unifiedData.levels.slice(0).find(d => !d.result);
       current.result = {
         attempts: 0,
         recent: [],

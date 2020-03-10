@@ -73,7 +73,7 @@ function generateAttempts({ range, sequence, iterations }) {
     const t = recent.splice(i, 1);
     recent.push(t);
   }
-  return { recent, done, attempts: i };
+  return { recent, done, attempts: i + 1 };
 }
 
 function getData() {

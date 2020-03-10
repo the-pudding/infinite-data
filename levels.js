@@ -48,7 +48,7 @@ function parseSequence(str) {
 
 function cleanData(data) {
   return data
-    .filter(d => d.use)
+    .filter(d => d.sequence)
     .map(d => {
       const sequence = parseSequence(d.sequence);
       return {

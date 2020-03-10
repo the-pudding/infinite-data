@@ -29,6 +29,7 @@ const region = process.env.AWS_REGION;
 
 function generateAttempts({ range, sequence, iterations }) {
   const seqLen = sequence.length;
+  const seqAnswer = sequence.map(d => [d.midi, d.duration]);
   const { midis, durations } = range;
   midis.sort(d3.ascending);
   durations.sort(d3.ascending);
@@ -48,7 +49,7 @@ function generateAttempts({ range, sequence, iterations }) {
       ]);
       s += 1;
     }
-    done = fastDeepEqual(seq, sequence);
+    done = fastDeepEqual(seq, seqAnswer);
     return seq;
   };
 
@@ -69,7 +70,7 @@ function generateAttempts({ range, sequence, iterations }) {
 
   const recent = output.filter(d => d);
   if (done) {
-    const t = recent.splice(correct, 1);
+    const t = recent.splice(i, 1);
     recent.push(t);
   }
   return { recent, done, attempts: i };

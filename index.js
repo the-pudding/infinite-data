@@ -108,6 +108,7 @@ function joinData({ levels, prevData }) {
   try {
     // adds new levels to the live data if not aligned
     const unifiedData = unify({ levels, prevData });
+    unifiedData.sort((a, b) => d3.ascending(a.odds, b.odds));
 
     // grab the active level and update it
     let current = unifiedData.levels.find(d => d.result && !d.result.done);

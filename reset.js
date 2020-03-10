@@ -2,15 +2,12 @@ const fs = require("fs");
 const dataS3 = require("data-s3");
 require("dotenv").config();
 
-const levels = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
+const data = JSON.parse(fs.readFileSync("./levels-backup.json", "utf8"));
 const path = "2020/04/infinite-data";
 const file = "data.json";
 const now = new Date().toString();
-const data = {
-  start: now,
-  updated: now,
-  levels
-};
+data.start = now;
+data.updated = now;
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;

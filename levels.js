@@ -47,20 +47,22 @@ function parseSequence(str) {
 }
 
 function cleanData(data) {
-  return data.map((d, i) => {
-    const sequence = parseSequence(d.sequence);
-    return {
-      title: d.title,
-      odds: +d.odds,
-      sig: +d.sig,
-      apm: +d.apm,
-      sequence,
-      range: {
-        midis: parseMidi({ value: d.range_midi, sequence }),
-        durations: parseDuration({ value: d.range_duration, sequence })
-      }
-    };
-  });
+  return data
+    .filter(d => d.use)
+    .map(d => {
+      const sequence = parseSequence(d.sequence);
+      return {
+        title: d.title,
+        odds: +d.odds,
+        sig: +d.sig,
+        apm: +d.apm,
+        sequence,
+        range: {
+          midis: parseMidi({ value: d.range_midi, sequence }),
+          durations: parseDuration({ value: d.range_duration, sequence })
+        }
+      };
+    });
 }
 
 function getSheet() {

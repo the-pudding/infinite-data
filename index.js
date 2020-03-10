@@ -110,11 +110,8 @@ function joinData({ levels, prevData }) {
     // grab the active level and update it
     let current = unifiedData.levels.find(d => d.result && !d.result.done);
 
-    // TODO remove
-    unifiedData.levels.reverse();
-
     if (!current) {
-      current = unifiedData.levels.slice(0).find(d => !d.result);
+      current = unifiedData.levels.find(d => !d.result);
       current.result = {
         attempts: 0,
         recent: [],

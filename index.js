@@ -19,7 +19,7 @@ const MIN = 10;
 
 const path = "2020/04/infinite-data";
 const file = "data.json";
-const updated = new Date().toString();
+const updated = new Date().toUTCString();
 const version = Date.now();
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -134,7 +134,7 @@ function joinData({ levels, prevData }) {
     result.done = done;
     result.recent = recent;
     result.attempts += attempts;
-    if (result.done) result.end = new Date().toString();
+    if (result.done) result.end = new Date().toUTCString();
 
     console.log("attempts ......", result.attempts);
 

@@ -4,7 +4,7 @@ const d3 = require("d3");
 
 const piano = d3.csvParse(fs.readFileSync("./piano.csv", "utf8"));
 // const midiFull = piano.map(d => +d.midi).slice(24, 85); // 61 key
-const midiFull = piano.map(d => +d.midi).slice(24, 73); // 49 key
+const midiFull = piano.map(d => +d.midi).filter(d => d >= 36 && d <= 84);
 const durationFull = [0, 1, 2, 3, 4];
 
 /* range options

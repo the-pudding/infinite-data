@@ -54,7 +54,6 @@ function cleanData(data) {
       return {
         title: d.title,
         odds: +d.odds,
-        sig: +d.sig,
         apm: +d.apm,
         est: +d.est,
         sequence,

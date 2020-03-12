@@ -53,6 +53,7 @@ function cleanData(data) {
       const sequence = parseSequence(d.sequence);
       return {
         title: d.title,
+        artist: d.artist,
         odds: +d.odds,
         apm: +d.apm,
         est: +d.est,

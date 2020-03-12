@@ -57,7 +57,7 @@ function cleanData(data) {
         odds: +d.odds,
         apm: +d.apm,
         est: +d.est,
-        temp: +d.tempo,
+        tempo: +d.tempo,
         sequence,
         range: {
           midis: parseMidi({ value: d.range_midi, sequence }),

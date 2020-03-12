@@ -58,6 +58,7 @@ function cleanData(data) {
         apm: +d.apm,
         est: +d.est,
         tempo: +d.tempo,
+        sig: sig.split(".").map(d => +d),
         sequence,
         range: {
           midis: parseMidi({ value: d.range_midi, sequence }),

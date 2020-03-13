@@ -39,7 +39,7 @@ function parseDuration({ value, sequence }) {
 }
 
 function parseSequence(str) {
-  const notes = str.split(".");
+  const notes = str.split(",");
   return notes.map(d => {
     const [midi, duration] = d.split("-").map(d => +d);
     return { midi, duration };

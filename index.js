@@ -120,6 +120,7 @@ function joinData({ levels, prevData }) {
         attempts: 0,
         recent: [],
         done: false,
+        start: new Date().toUTCString(),
         end: ""
       };
     }

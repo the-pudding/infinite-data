@@ -71,7 +71,7 @@ function generateAttempts({ range, sequence, iterations }) {
 
   const recent = output.filter(d => d);
   if (done) {
-    const t = recent.splice(i, 1);
+    const [t] = recent.splice(i, 1);
     recent.push(t);
     i += 1;
   }

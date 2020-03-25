@@ -123,7 +123,7 @@ function addEstimate(data) {
   const base = diff < 0 ? 0 : diff;
 
   let tally = base;
-  const withEstimate = data.map((d, i) => {
+  return data.map((d, i) => {
     let estimate;
     if (i === index && base === 0) {
       estimate = base === 0 ? "anytime now" : toTime(base);
@@ -137,7 +137,6 @@ function addEstimate(data) {
       estimate
     };
   });
-  return withEstimate;
 }
 
 function joinData({ levels, prevData }) {
@@ -177,7 +176,7 @@ function joinData({ levels, prevData }) {
 
     console.log("attempts ......", result.attempts);
 
-    withEstimate = addEstimate(unifiedData.levels);
+    const withEstimate = addEstimate(unifiedData.levels);
 
     return {
       ...unifiedData,

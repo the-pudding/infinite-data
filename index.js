@@ -109,9 +109,11 @@ function toTime(hours) {
   const r = Math.round(hours);
   const d = Math.round(r / 24);
   const y = Math.round(d / 365);
+  const c = Math.round(y / 100);
   if (hours < 24) return `${r} hours`;
   if (d < 365) return `${d} day${d > 1 ? "s" : ""}`;
-  return `${y} year${y > 1 ? "s" : ""}`;
+  if (y < 200) return `${y} year${y > 1 ? "s" : ""}`;
+  return `${c} centuries`;
 }
 
 function addEstimate(data) {
@@ -125,8 +127,8 @@ function addEstimate(data) {
   let tally = base;
   return data.map((d, i) => {
     let estimate;
-    if (i === index && base === 0) {
-      estimate = base === 0 ? "anytime now" : toTime(base);
+    if (i === index) {
+      estimate = base === 0 ? "Anytime now..." : toTime(base);
     } else if (i > index) {
       tally += d.est;
       estimate = toTime(tally);

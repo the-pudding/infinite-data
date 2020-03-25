@@ -105,6 +105,41 @@ function unify({ levels, prevData }) {
   return prevData;
 }
 
+function toTime(hours) {
+  const r = Math.round(hours);
+  const d = Math.round(r / 24);
+  const y = Math.round(d / 365);
+  if (hours < 24) return `${r} hours`;
+  if (d < 365) return `${d} day${d > 1 ? "s" : ""}`;
+  return `${y} year${y > 1 ? "s" : ""}`;
+}
+
+function addEstimate(data) {
+  const index = data.findIndex(d => d.result && !d.result.done);
+  const cur = data[index];
+  const actual = cur.result.attempts / cur.apm / 60;
+  const estimated = cur.est;
+  const diff = estimated - actual;
+  const base = diff < 0 ? 0 : diff;
+
+  let tally = base;
+  const withEstimate = data.map((d, i) => {
+    let estimate;
+    if (i === index && base === 0) {
+      estimate = base === 0 ? "anytime now" : toTime(base);
+    } else if (i > index) {
+      tally += d.est;
+      estimate = toTime(tally);
+    }
+
+    return {
+      ...d,
+      estimate
+    };
+  });
+  return withEstimate;
+}
+
 function joinData({ levels, prevData }) {
   try {
     // adds new levels to the live data if not aligned
@@ -142,8 +177,11 @@ function joinData({ levels, prevData }) {
 
     console.log("attempts ......", result.attempts);
 
+    withEstimate = addEstimate(unifiedData.levels);
+
     return {
       ...unifiedData,
+      levels: withEstimate,
       updated
     };
   } catch (err) {

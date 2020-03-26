@@ -208,7 +208,10 @@ async function init() {
     else await dataS3.upload({ bucket, path, file, data });
     process.exit();
   } catch (err) {
-    const msg = err.toString();
+    const text = err.toString();
+    const file = err.fileName;
+    const line = err.lineNumber;
+    const msg = `${file} [${line}]: ${text}`;
     if (DEV) console.log(msg);
     else notify(msg);
   }

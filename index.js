@@ -106,6 +106,7 @@ function unify({ levels, prevData }) {
 }
 
 function toTime(hours) {
+  const f = d3.format(",");
   const r = Math.round(hours);
   const d = Math.round(r / 24);
   const y = Math.round(d / 365);
@@ -113,7 +114,7 @@ function toTime(hours) {
   if (hours < 24) return `${r} hours`;
   if (d < 365) return `${d} day${d > 1 ? "s" : ""}`;
   if (y < 200) return `${y} year${y > 1 ? "s" : ""}`;
-  return `${c} centuries`;
+  return `${f(c)} centuries`;
 }
 
 function addEstimate(data) {

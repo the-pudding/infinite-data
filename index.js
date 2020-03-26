@@ -1,5 +1,5 @@
-const DEV = process.env.NODE_ENV === "development";
-
+// const DEV = process.env.NODE_ENV === "development";
+const DEV = false;
 if (DEV)
   console.log(`
 ******         ******
@@ -131,7 +131,7 @@ function addEstimate(data) {
   let tally = base;
   return data.map((d, i) => {
     let estimate;
-    if (i === index) {
+    if (i === index && !d.result.done) {
       estimate = base === 0 ? "Anytime now..." : toTime(base);
     } else if (i > index) {
       tally += d.est;

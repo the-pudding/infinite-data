@@ -28,7 +28,7 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const bucket = process.env.AWS_BUCKET;
 const region = process.env.AWS_REGION;
 
-function generateAttempts({ range, sequence, iterations }) {
+function generateAttempts({ range, sequence, iterations, recent }) {
   const seqLen = sequence.length;
   const seqAnswer = sequence.map(d => [d.midi, d.duration]);
   const { midis, durations } = range;
@@ -54,10 +54,10 @@ function generateAttempts({ range, sequence, iterations }) {
     return seq;
   };
 
-  const output = [];
   let i = 0;
 
   const start = Date.now();
+  const output = recent.map(d => d);
 
   while (i < iterations) {
     output[i % RECENT] = makeAttempt();
@@ -69,13 +69,13 @@ function generateAttempts({ range, sequence, iterations }) {
   const g = n < 1 ? "< 0" : Math.floor(n);
   console.log("generate ......", `${g}s`);
 
-  const recent = output.filter(d => d);
+  const recentNew = output.filter(d => d);
   if (done) {
-    const [t] = recent.splice(i, 1);
-    recent.push(t);
+    const [t] = recentNew.splice(i, 1);
+    recentNew.push(t);
     i += 1;
   }
-  return { recent, done, attempts: i };
+  return { done, attempts: i, recent: recentNew };
 }
 
 function getData() {
@@ -152,7 +152,8 @@ function joinData({ levels, prevData }) {
     let current = unifiedData.levels.find(d => d.result && !d.result.done);
 
     if (!current) {
-      current = unifiedData.levels.find(d => !d.result);
+      const index = unifiedData.levels.findIndex(d => !d.result);
+      const current = unifiedData.levels[index];
       current.result = {
         attempts: 0,
         recent: [],
@@ -160,6 +161,11 @@ function joinData({ levels, prevData }) {
         start: new Date().toUTCString(),
         end: ""
       };
+      // just keep last 10 previous ones
+      if (index > 0) {
+        const r = unifiedData.levels[index - 1].result.recent;
+        r = r.slice(-10);
+      }
     }
 
     const iterations = MIN * current.apm;

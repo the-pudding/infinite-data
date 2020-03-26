@@ -165,7 +165,7 @@ function joinData({ levels, prevData }) {
       };
       // just keep last 10 previous ones
       if (index > 0) {
-        const r = unifiedData.levels[index - 1].result.recent;
+        let r = unifiedData.levels[index - 1].result.recent;
         r = r.slice(-10);
       }
     }

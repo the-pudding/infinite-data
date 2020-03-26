@@ -28,7 +28,7 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const bucket = process.env.AWS_BUCKET;
 const region = process.env.AWS_REGION;
 
-function generateAttempts({ range, sequence, iterations, recent }) {
+function generateAttempts({ range, sequence, iterations, result }) {
   const seqLen = sequence.length;
   const seqAnswer = sequence.map(d => [d.midi, d.duration]);
   const { midis, durations } = range;
@@ -57,7 +57,8 @@ function generateAttempts({ range, sequence, iterations, recent }) {
   let i = 0;
 
   const start = Date.now();
-  const output = recent.map(d => d);
+
+  const output = result.recent.map(d => d);
 
   while (i < iterations) {
     output[i % RECENT] = makeAttempt();
@@ -118,7 +119,9 @@ function toTime(hours) {
 }
 
 function addEstimate(data) {
-  const index = data.findIndex(d => d.result && !d.result.done);
+  let index = data.findIndex(d => d.result && !d.result.done);
+  if (index < 0) index = data.filter(d => d.result).length - 1;
+
   const cur = data[index];
   const actual = cur.result.attempts / cur.apm / 60;
   const estimated = cur.est;
@@ -153,7 +156,7 @@ function joinData({ levels, prevData }) {
 
     if (!current) {
       const index = unifiedData.levels.findIndex(d => !d.result);
-      const current = unifiedData.levels[index];
+      current = unifiedData.levels[index];
       current.result = {
         attempts: 0,
         recent: [],
@@ -171,7 +174,6 @@ function joinData({ levels, prevData }) {
     const iterations = MIN * current.apm;
     console.log("title .........", current.title);
     console.log("iterations ....", iterations);
-
     const { recent, done, attempts } = generateAttempts({
       ...current,
       iterations

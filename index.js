@@ -1,5 +1,4 @@
-// const DEV = process.env.NODE_ENV === "development";
-const DEV = false;
+const DEV = process.env.NODE_ENV === "development";
 if (DEV)
   console.log(`
 ******         ******

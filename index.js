@@ -161,12 +161,14 @@ function joinData({ levels, prevData }) {
         start: new Date().toUTCString(),
         end: ""
       };
-      // just keep last 10 previous ones
-      if (index > 0) {
-        let r = unifiedData.levels[index - 1].result.recent;
-        r = r.slice(-10);
-      }
     }
+
+    // anything that has finished, use last 10
+    unifiedData.levels.forEach(l => {
+      if (l.result && l.result.done) {
+        l.result.recent = l.result.recent.slice(-10);
+      }
+    });
 
     const iterations = MIN * current.apm;
     console.log("title .........", current.title);

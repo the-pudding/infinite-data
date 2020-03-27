@@ -203,7 +203,7 @@ async function init() {
     const prevData = await getData();
     const data = await joinData({ levels, prevData });
     if (DEV) fs.writeFileSync("test.json", JSON.stringify(data));
-    // else await dataS3.upload({ bucket, path, file, data });
+    else await dataS3.upload({ bucket, path, file, data });
     process.exit();
   } catch (err) {
     const msg = err.toString();

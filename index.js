@@ -53,18 +53,16 @@ function generateAttempts({ range, sequence, iterations, result }) {
     return seq;
   };
 
-  let i = 0;
-
   const start = Date.now();
-
   const output = result.recent.map(d => d);
+  let i = 0;
+  let off = output.length;
 
   while (i < iterations) {
-    output[i % RECENT] = makeAttempt();
+    output[(i + off) % RECENT] = makeAttempt();
     if (done) break;
     i += 1;
   }
-
   const n = (Date.now() - start) / 1000;
   const g = n < 1 ? "< 0" : Math.floor(n);
   console.log("generate ......", `${g}s`);
@@ -205,7 +203,7 @@ async function init() {
     const prevData = await getData();
     const data = await joinData({ levels, prevData });
     if (DEV) fs.writeFileSync("test.json", JSON.stringify(data));
-    else await dataS3.upload({ bucket, path, file, data });
+    // else await dataS3.upload({ bucket, path, file, data });
     process.exit();
   } catch (err) {
     const msg = err.toString();

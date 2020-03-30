@@ -71,9 +71,8 @@ function generateAttempts({ range, sequence, iterations, result }) {
   if (done) {
     const [t] = recentNew.splice(i, 1);
     recentNew.push(t);
-    i += 1;
   }
-  return { done, attempts: i, recent: recentNew };
+  return { done, attempts: i + (done ? 1 : 0), recent: recentNew };
 }
 
 function getData() {

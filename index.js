@@ -108,6 +108,7 @@ function toTime(hours) {
   const d = Math.round(r / 24);
   const y = Math.round(d / 365);
   const c = Math.round(y / 100);
+  if (hours === 0) return "Anytime now...";
   if (hours < 24) return `${r} hours`;
   if (d < 365) return `${d} day${d > 1 ? "s" : ""}`;
   if (y < 200) return `${y} year${y > 1 ? "s" : ""}`;

@@ -29,7 +29,7 @@ const region = process.env.AWS_REGION;
 
 function generateAttempts({ range, sequence, iterations, result }) {
   const seqLen = sequence.length;
-  const seqAnswer = sequence.map(d => [d.midi, d.duration]);
+  const seqAnswer = sequence.map((d) => [d.midi, d.duration]);
   const { midis, durations } = range;
   midis.sort(d3.ascending);
   durations.sort(d3.ascending);
@@ -45,7 +45,7 @@ function generateAttempts({ range, sequence, iterations, result }) {
     while (s < seqLen) {
       seq.push([
         midis[~~(Math.random() * mL)],
-        durations[~~(Math.random() * dL)]
+        durations[~~(Math.random() * dL)],
       ]);
       s += 1;
     }
@@ -54,7 +54,7 @@ function generateAttempts({ range, sequence, iterations, result }) {
   };
 
   const start = Date.now();
-  const output = result.recent.map(d => d);
+  const output = result.recent.map((d) => d);
   let i = 0;
   let off = output.length;
 
@@ -67,7 +67,7 @@ function generateAttempts({ range, sequence, iterations, result }) {
   const g = n < 1 ? "< 0" : Math.floor(n);
   console.log("generate ......", `${g}s`);
 
-  const recentNew = output.filter(d => d);
+  const recentNew = output.filter((d) => d);
   if (done) {
     const [t] = recentNew.splice((i + off) % RECENT, 1);
     recentNew.push(t);
@@ -96,7 +96,7 @@ function getData() {
 
 function unify({ levels, prevData }) {
   const add = levels.filter(
-    l => !prevData.levels.find(p => p.title === l.title)
+    (l) => !prevData.levels.find((p) => p.title === l.title)
   );
   prevData.levels = prevData.levels.concat(add);
   return prevData;
@@ -116,8 +116,8 @@ function toTime(hours) {
 }
 
 function addEstimate(data) {
-  let index = data.findIndex(d => d.result && !d.result.done);
-  if (index < 0) index = data.filter(d => d.result).length - 1;
+  let index = data.findIndex((d) => d.result && !d.result.done);
+  if (index < 0) index = data.filter((d) => d.result).length - 1;
 
   const cur = data[index];
   const actual = cur.result.attempts / cur.apm / 60;
@@ -137,7 +137,7 @@ function addEstimate(data) {
 
     return {
       ...d,
-      estimate
+      estimate,
     };
   });
 }
@@ -149,22 +149,22 @@ function joinData({ levels, prevData }) {
     unifiedData.levels.sort((a, b) => d3.ascending(a.odds, b.odds));
 
     // grab the active level and update it
-    let current = unifiedData.levels.find(d => d.result && !d.result.done);
+    let current = unifiedData.levels.find((d) => d.result && !d.result.done);
 
     if (!current) {
-      const index = unifiedData.levels.findIndex(d => !d.result);
+      const index = unifiedData.levels.findIndex((d) => !d.result);
       current = unifiedData.levels[index];
       current.result = {
         attempts: 0,
         recent: [],
         done: false,
         start: new Date().toUTCString(),
-        end: ""
+        end: "",
       };
     }
 
     // anything that has finished, use last 10
-    unifiedData.levels.forEach(l => {
+    unifiedData.levels.forEach((l) => {
       if (l.result && l.result.done) {
         l.result.recent = l.result.recent.slice(-10);
       }
@@ -175,7 +175,7 @@ function joinData({ levels, prevData }) {
     console.log("iterations ....", iterations);
     const { recent, done, attempts } = generateAttempts({
       ...current,
-      iterations
+      iterations,
     });
     const { result } = current;
 
@@ -191,7 +191,7 @@ function joinData({ levels, prevData }) {
     return {
       ...unifiedData,
       levels: withEstimate,
-      updated
+      updated,
     };
   } catch (err) {
     throw new Error(err);

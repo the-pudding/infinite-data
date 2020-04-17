@@ -185,6 +185,7 @@ function joinData({ levels, prevData }) {
     if (result.done) result.end = new Date().toUTCString();
 
     console.log("attempts ......", result.attempts);
+    if (done) console.log("success!");
 
     const withEstimate = addEstimate(unifiedData.levels);
 

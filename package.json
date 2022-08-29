@@ -11,7 +11,7 @@
   "author": "russell goldenberg",
   "license": "MIT",
   "dependencies": {
-    "@sendgrid/mail": "^6.5.3",
+    "@sendgrid/mail": "^6.5.5",
     "d3": "^5.15.0",
     "data-s3": "^1.2.3",
     "dotenv": "^8.2.0",

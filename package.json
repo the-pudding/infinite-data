@@ -1,23 +1,23 @@
 {
-  "name": "infinite-data",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node --max-old-space-size=8192 index.js",
-    "reset": "node reset.js"
-  },
-  "keywords": [],
-  "author": "russell goldenberg",
-  "license": "MIT",
-  "dependencies": {
-    "@sendgrid/mail": "^6.5.5",
-    "d3": "^5.15.0",
-    "data-s3": "^1.2.3",
-    "dotenv": "^8.2.0",
-    "fast-deep-equal": "^3.1.1",
-    "levdist": "^2.2.9",
-    "mersenne-twister": "^1.1.0",
-    "request": "^2.88.2"
-  }
+	"name": "infinite-data",
+	"version": "1.0.1",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node --max-old-space-size=8192 index.js",
+		"reset": "node reset.js"
+	},
+	"keywords": [],
+	"author": "russell goldenberg",
+	"license": "MIT",
+	"dependencies": {
+		"@sendgrid/mail": "^6.5.5",
+		"d3": "^5.15.0",
+		"data-s3": "^1.2.3",
+		"dotenv": "^8.2.0",
+		"fast-deep-equal": "^3.1.1",
+		"levdist": "^2.2.9",
+		"mersenne-twister": "^1.1.0",
+		"request": "^2.88.2"
+	}
 }
